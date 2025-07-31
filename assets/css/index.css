@@ -1,0 +1,217 @@
+/* Styles spécifiques à la page d'accueil */
+
+/* Canvas pour le bruit de Perlin subtil */
+#perlinCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    opacity: 0.25;
+    filter: blur(1.5px);
+}
+
+/* Overlay avec plus de couleurs */
+.gradient-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255, 0, 110, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+    z-index: -1;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px var(--spacing-xl);
+    position: relative;
+    z-index: 10;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    margin: 0 0 var(--spacing-lg) 0;
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple), var(--accent-blue), var(--accent-green));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    animation: glowShift 4s ease-in-out infinite;
+    text-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
+}
+
+@keyframes glowShift {
+    0%, 100% { 
+        background-position: 0% 50%;
+        filter: hue-rotate(0deg);
+    }
+    50% { 
+        background-position: 100% 50%;
+        filter: hue-rotate(60deg);
+    }
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: var(--accent-green);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+
+/* Gallery grid */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--spacing-xxl);
+}
+
+/* Cards */
+.card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    text-align: left;
+    backdrop-filter: blur(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 0, 110, 0.6), 
+        rgba(59, 130, 246, 0.6),
+        rgba(16, 185, 129, 0.6),
+        transparent
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    background: var(--glass-hover);
+    border-color: rgba(255, 0, 110, 0.3);
+    box-shadow: 
+        var(--shadow-panel),
+        0 0 30px rgba(255, 0, 110, 0.2);
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card h3 {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-xxl);
+    font-size: 0.9rem;
+}
+
+/* Special card for featured content */
+.special-card {
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.special-card:hover {
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 
+        var(--shadow-panel),
+        0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+.special-card .btn {
+    background: linear-gradient(45deg, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.2));
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.special-card .btn:hover {
+    background: linear-gradient(45deg, rgba(16, 185, 129, 0.5), rgba(59, 130, 246, 0.4));
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Canvas de fond pour l'index */
+#perlinCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    opacity: 0.25;
+    filter: blur(1.5px);
+}
+
+/* Overlay gradient */
+.gradient-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255, 0, 110, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+    z-index: -1;
+}
+
+/* Responsive pour l'index */
+@media (max-width: 768px) {
+    .container {
+        padding: 40px var(--spacing-lg);
+    }
+    
+    .header {
+        margin-bottom: 60px;
+    }
+    
+    .gallery {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+    }
+    
+    .card {
+        padding: var(--spacing-xxl);
+    }
+}

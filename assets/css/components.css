@@ -1,0 +1,171 @@
+/* Panneau d'information */
+.info {
+    position: absolute;
+    top: var(--spacing-xl);
+    left: var(--spacing-xl);
+    color: var(--text-primary);
+    z-index: 100;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xxl);
+    backdrop-filter: blur(20px);
+    max-width: 320px;
+}
+
+.info h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 var(--spacing-md) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-green);
+}
+
+.info p {
+    margin: var(--spacing-sm) 0;
+    line-height: 1.5;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Panneau de contrôles */
+.controls {
+    position: absolute;
+    top: var(--spacing-xl);
+    right: var(--spacing-xl);
+    color: var(--text-primary);
+    z-index: 100;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xxl);
+    backdrop-filter: blur(20px);
+    min-width: 280px;
+}
+
+.controls h4 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 var(--spacing-lg) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+}
+
+.controls label {
+    display: block;
+    margin-bottom: var(--spacing-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Sliders */
+.controls input[type="range"] {
+    width: 100%;
+    margin-top: var(--spacing-xs);
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+}
+
+.controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--gradient-slider);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--text-primary);
+}
+
+.controls input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--gradient-slider);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--text-primary);
+}
+
+/* Select dropdowns */
+.controls select {
+    width: 100%;
+    margin-top: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-primary);
+    font-size: 0.875rem;
+}
+
+.controls select:focus {
+    outline: none;
+    border-color: rgba(255, 0, 110, 0.5);
+    box-shadow: 0 0 0 2px rgba(255, 0, 110, 0.2);
+}
+
+/* Boutons */
+.controls button, .btn {
+    margin: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) 0;
+    padding: 10px var(--spacing-lg);
+    background: var(--gradient-primary);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 0, 110, 0.3);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: var(--transition-fast);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.controls button:hover, .btn:hover {
+    background: var(--gradient-hover);
+    border-color: rgba(255, 0, 110, 0.5);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-button);
+}
+
+.controls button.active {
+    background: var(--gradient-active);
+    border-color: rgba(255, 0, 110, 0.8);
+    box-shadow: var(--shadow-active);
+}
+
+/* Bouton de retour */
+.back-btn {
+    position: absolute;
+    bottom: var(--spacing-xl);
+    left: var(--spacing-xl);
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-decoration: none;
+    backdrop-filter: blur(20px);
+    transition: var(--transition-smooth);
+    font-family: var(--font-primary);
+    font-weight: 500;
+    z-index: 100;
+}
+
+.back-btn:hover {
+    background: var(--glass-hover);
+    border-color: var(--glass-hover-border);
+    transform: translateX(-3px);
+}

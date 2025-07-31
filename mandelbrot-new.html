@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Set - Algorave</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            color: #ffffff;
+        }
+        
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            max-width: 320px;
+        }
+        
+        .info h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #10b981;
+        }
+        
+        .info p {
+            margin: 8px 0;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            min-width: 280px;
+        }
+        
+        .controls h4 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+        }
+        
+        .controls label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .controls select {
+            width: 100%;
+            margin-top: 4px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .controls select:focus {
+            outline: none;
+            border-color: rgba(255, 0, 110, 0.5);
+            box-shadow: 0 0 0 2px rgba(255, 0, 110, 0.2);
+        }
+        
+        .controls input[type="range"] {
+            width: 100%;
+            margin-top: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        .controls input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        .controls button {
+            margin: 8px 8px 8px 0;
+            padding: 10px 16px;
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.2), rgba(59, 130, 246, 0.2));
+            color: #ffffff;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+        }
+        
+        .controls button:hover {
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.4), rgba(59, 130, 246, 0.4));
+            border-color: rgba(255, 0, 110, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 0, 110, 0.3);
+        }
+        
+        .controls button.active {
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.6), rgba(59, 130, 246, 0.6));
+            border-color: rgba(255, 0, 110, 0.8);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.4);
+        }
+        
+        .back-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h3>Ensemble de Mandelbrot</h3>
+        <p>L'ensemble fractal le plus célèbre au monde. Cliquez pour zoomer dans les zones intéressantes et explorer l'infini mathématique.</p>
+        <p><strong>Mode:</strong> <span id="currentMode">Manuel</span></p>
+    </div>
+    
+    <div class="controls">
+        <h4>Contrôles</h4>
+        
+        <label>Palette: 
+            <select id="colorScheme">
+                <option value="rainbow">Arc-en-ciel</option>
+                <option value="fire">Feu</option>
+                <option value="ocean">Océan</option>
+                <option value="psychedelic" selected>Psychédélique</option>
+                <option value="monochrome">Monochrome</option>
+            </select>
+        </label>
+        <label>Itérations: <input type="range" id="maxIter" min="50" max="500" value="100"></label>
+        <label>Vitesse: <input type="range" id="autoSpeed" min="0.2" max="3.0" step="0.1" value="1.0"></label>
+        <label>Qualité:
+            <select id="quality">
+                <option value="low">Rapide</option>
+                <option value="medium" selected>Normale</option>
+                <option value="high">Haute</option>
+            </select>
+        </label>
+        
+        <button id="randomBtn">Randomiser</button>
+        <button id="resetBtn">Reset</button>
+        <button id="autoBtn">Auto Mode</button>
+    </div>
+    
+    <a href="index.html" class="back-btn">← Retour à Algorave</a>
+    
+    <canvas id="mandelbrotCanvas"></canvas>
+
+    <script>
+        // Variables globales
+        const canvas = document.getElementById('mandelbrotCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let centerX = -0.5, centerY = 0.0;
+        let zoom = 1;
+        let maxIterations = 100;
+        let isAutoMode = false;
+        let autoTimer = 0;
+        let autoSpeed = 1.0;
+        let colorScheme = 'psychedelic';
+        let quality = 'medium';
+        
+        // Points d'intérêt pour l'exploration automatique
+        const interestingPoints = [
+            { x: -0.5, y: 0.0, z: 1, name: "Vue d'ensemble" },
+            { x: -0.7269, y: 0.1889, z: 100, name: "Spirale principale" },
+            { x: -0.8, y: 0.156, z: 200, name: "Mini-Mandelbrot" },
+            { x: -0.16, y: 1.0407, z: 400, name: "Détails fins" },
+            { x: -1.25066, y: 0.02012, z: 600, name: "Bulbe latéral" },
+            { x: -0.235125, y: 0.827215, z: 800, name: "Fractales complexes" },
+            { x: -0.7463, y: 0.1102, z: 1000, name: "Spirales profondes" },
+            { x: -0.16070135, y: 1.0375665, z: 1500, name: "Infini fractal" }
+        ];
+        
+        let pointIndex = 0;
+        let current = { x: centerX, y: centerY, z: zoom };
+        let target = { x: centerX, y: centerY, z: zoom };
+
+        // Redimensionnement du canvas
+        function resize() {
+            canvas.width = width = window.innerWidth;
+            canvas.height = height = window.innerHeight;
+        }
+
+        // Fonction d'interpolation
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+
+        // Calcul de l'ensemble de Mandelbrot
+        function mandelbrot(cx, cy) {
+            let x = 0, y = 0;
+            let iteration = 0;
+            
+            while (x * x + y * y <= 4 && iteration < maxIterations) {
+                const xtemp = x * x - y * y + cx;
+                y = 2 * x * y + cy;
+                x = xtemp;
+                iteration++;
+            }
+            
+            return iteration;
+        }
+
+        // Palettes de couleurs
+        function getColor(iter) {
+            if (iter >= maxIterations) return [0, 0, 0];
+            
+            const t = iter / maxIterations;
+            
+            switch(colorScheme) {
+                case 'rainbow':
+                    const hue = (t * 360) % 360;
+                    return hslToRgb(hue, 70, 50);
+                
+                case 'fire':
+                    const r = Math.floor(255 * Math.min(1, t * 2));
+                    const g = Math.floor(255 * Math.max(0, (t - 0.3) * 1.4));
+                    const b = Math.floor(100 * Math.max(0, (t - 0.7) * 3.3));
+                    return [r, g, b];
+                
+                case 'ocean':
+                    const blue = Math.floor(100 + 155 * t);
+                    const green = Math.floor(50 + 100 * t);
+                    const red = Math.floor(20 * t);
+                    return [red, green, blue];
+                
+                case 'psychedelic':
+                    const phase = t * Math.PI * 4;
+                    const rp = Math.floor(128 + 127 * Math.sin(phase));
+                    const gp = Math.floor(128 + 127 * Math.sin(phase + 2));
+                    const bp = Math.floor(128 + 127 * Math.sin(phase + 4));
+                    return [rp, gp, bp];
+                
+                case 'monochrome':
+                    const intensity = Math.floor(255 * t);
+                    return [intensity, intensity, intensity];
+                
+                default:
+                    return [255 * t, 255 * t, 255 * t];
+            }
+        }
+
+        // Conversion HSL vers RGB
+        function hslToRgb(h, s, l) {
+            h /= 360; s /= 100; l /= 100;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => {
+                const k = (n + h * 12) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color);
+            };
+            return [f(0), f(8), f(4)];
+        }
+
+        // Rendu principal avec optimisation selon la qualité
+        function render() {
+            const step = quality === 'high' ? 1 : quality === 'medium' ? 2 : 3;
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+            
+            for (let px = 0; px < width; px += step) {
+                for (let py = 0; py < height; py += step) {
+                    const x = (px - width / 2) / (zoom * 200) + centerX;
+                    const y = (py - height / 2) / (zoom * 200) + centerY;
+                    
+                    const iter = mandelbrot(x, y);
+                    const [r, g, b] = getColor(iter);
+                    
+                    // Remplir le bloc selon la qualité
+                    for (let dx = 0; dx < step && px + dx < width; dx++) {
+                        for (let dy = 0; dy < step && py + dy < height; dy++) {
+                            const index = ((py + dy) * width + (px + dx)) * 4;
+                            data[index] = r;
+                            data[index + 1] = g;
+                            data[index + 2] = b;
+                            data[index + 3] = 255;
+                        }
+                    }
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            updateUI();
+        }
+
+        // Mise à jour de l'interface
+        function updateUI() {
+            document.getElementById('currentMode').textContent = 
+                isAutoMode ? 'Auto' : 'Manuel';
+        }
+
+        // Mode automatique avec transitions fluides
+        function startAutoMode() {
+            if (!isAutoMode) return;
+            
+            const targetPoint = interestingPoints[pointIndex];
+            target = { ...targetPoint };
+            
+            // Animation fluide vers le point cible
+            const animationDuration = 4000 / autoSpeed;
+            const startTime = Date.now();
+            
+            function animateStep() {
+                if (!isAutoMode) return;
+                
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / animationDuration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out
+                
+                centerX = lerp(current.x, target.x, easeProgress);
+                centerY = lerp(current.y, target.y, easeProgress);
+                zoom = lerp(current.z, target.z, easeProgress);
+                
+                render();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateStep);
+                } else {
+                    // Préparation du prochain point
+                    current = { x: centerX, y: centerY, z: zoom };
+                    pointIndex = (pointIndex + 1) % interestingPoints.length;
+                    
+                    // Pause avant le prochain point
+                    setTimeout(() => {
+                        if (isAutoMode) startAutoMode();
+                    }, 2000 / autoSpeed);
+                }
+            }
+            
+            animateStep();
+        }
+
+        // Gestionnaires d'événements
+        canvas.addEventListener('click', (e) => {
+            if (isAutoMode) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const px = e.clientX - rect.left;
+            const py = e.clientY - rect.top;
+            
+            centerX = (px - width / 2) / (zoom * 200) + centerX;
+            centerY = (py - height / 2) / (zoom * 200) + centerY;
+            zoom *= 2;
+            
+            render();
+        });
+
+        // Contrôles
+        document.getElementById('maxIter').addEventListener('input', (e) => {
+            maxIterations = parseInt(e.target.value);
+            if (!isAutoMode) render();
+        });
+
+        document.getElementById('autoSpeed').addEventListener('input', (e) => {
+            autoSpeed = parseFloat(e.target.value);
+        });
+
+        document.getElementById('colorScheme').addEventListener('change', (e) => {
+            colorScheme = e.target.value;
+            render();
+        });
+
+        document.getElementById('quality').addEventListener('change', (e) => {
+            quality = e.target.value;
+            render();
+        });
+
+        document.getElementById('autoBtn').addEventListener('click', () => {
+            isAutoMode = !isAutoMode;
+            const btn = document.getElementById('autoBtn');
+            
+            if (isAutoMode) {
+                btn.textContent = 'Stop Auto';
+                btn.classList.add('active');
+                current = { x: centerX, y: centerY, z: zoom };
+                startAutoMode();
+            } else {
+                btn.textContent = 'Auto Mode';
+                btn.classList.remove('active');
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            isAutoMode = false;
+            document.getElementById('autoBtn').textContent = 'Auto Mode';
+            document.getElementById('autoBtn').classList.remove('active');
+            
+            centerX = -0.5; centerY = 0.0; zoom = 1;
+            maxIterations = 100;
+            document.getElementById('maxIter').value = 100;
+            
+            current = { x: centerX, y: centerY, z: zoom };
+            render();
+        });
+
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            if (!isAutoMode) {
+                const pt = interestingPoints[Math.floor(Math.random() * interestingPoints.length)];
+                centerX = pt.x + (Math.random() - 0.5) * 0.05;
+                centerY = pt.y + (Math.random() - 0.5) * 0.05;
+                zoom = pt.z * (0.7 + Math.random() * 0.6);
+                render();
+            }
+        });
+
+        // Initialisation
+        window.addEventListener('resize', () => {
+            resize();
+            render();
+        });
+
+        resize();
+        render();
+    </script>
+</body>
+</html>

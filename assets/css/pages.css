@@ -1,0 +1,140 @@
+/* Styles spécifiques aux pages de visualisation */
+
+/* Canvas interactifs */
+.interactive-canvas {
+    cursor: crosshair;
+}
+
+.interactive-canvas:active {
+    cursor: grabbing;
+}
+
+/* Curseurs spéciaux pour différents modes */
+.zoom-mode {
+    cursor: zoom-in;
+}
+
+.pan-mode {
+    cursor: grab;
+}
+
+.pan-mode:active {
+    cursor: grabbing;
+}
+
+/* Overlays de chargement */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-text {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--accent-green);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Informations dynamiques */
+.dynamic-info {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Indicateurs de statut */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: var(--spacing-sm);
+}
+
+.status-indicator.active {
+    background: var(--accent-green);
+    box-shadow: 0 0 10px var(--accent-green);
+}
+
+.status-indicator.inactive {
+    background: var(--text-secondary);
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .info, .controls {
+        position: relative;
+        max-width: none;
+        margin: var(--spacing-md);
+        top: auto;
+        left: auto;
+        right: auto;
+    }
+    
+    .controls {
+        min-width: auto;
+    }
+    
+    .back-btn {
+        position: relative;
+        margin: var(--spacing-md);
+        bottom: auto;
+        left: auto;
+        display: block;
+        text-align: center;
+    }
+    
+    canvas {
+        height: calc(100vh - 200px);
+    }
+}

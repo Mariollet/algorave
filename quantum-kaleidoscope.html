@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Kaleidoscope - Algorave</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            color: #ffffff;
+        }
+        
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            max-width: 320px;
+        }
+        
+        .info h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #10b981;
+        }
+        
+        .info p {
+            margin: 8px 0;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            min-width: 280px;
+        }
+        
+        .controls h4 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+        }
+        
+        .controls label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .controls select {
+            width: 100%;
+            margin-top: 4px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .controls select:focus {
+            outline: none;
+            border-color: rgba(255, 0, 110, 0.5);
+            box-shadow: 0 0 0 2px rgba(255, 0, 110, 0.2);
+        }
+        
+        .controls input[type="range"] {
+            width: 100%;
+            margin-top: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        .controls input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        .controls button {
+            margin: 8px 8px 8px 0;
+            padding: 10px 16px;
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.2), rgba(59, 130, 246, 0.2));
+            color: #ffffff;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+        }
+        
+        .controls button:hover {
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.4), rgba(59, 130, 246, 0.4));
+            border-color: rgba(255, 0, 110, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 0, 110, 0.3);
+        }
+        
+        .controls button.active {
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.6), rgba(59, 130, 246, 0.6));
+            border-color: rgba(255, 0, 110, 0.8);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.4);
+        }
+        
+        .back-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h3>Kaleidoscope Quantique</h3>
+        <p>Expérience psychédélique combinant fractales, distorsions temporelles et feedback visuel. Laissez-vous hypnotiser par les patterns infinis qui évoluent en temps réel.</p>
+        <p><strong>Mode:</strong> <span id="currentMode">Hypnose</span></p>
+    </div>
+    
+    <div class="controls">
+        <h4>Contrôles</h4>
+        <label>Mode: 
+            <select id="mode">
+                <option value="hypnosis" selected>Hypnose</option>
+                <option value="fractal">Fractale Pure</option>
+                <option value="rainbow">Arc-en-ciel</option>
+                <option value="cosmic">Cosmique</option>
+                <option value="psychedelic">Psychédélique</option>
+            </select>
+        </label>
+        <label>Vitesse: <input type="range" id="speed" min="0.5" max="5" step="0.1" value="2"></label>
+        <label>Complexité: <input type="range" id="complexity" min="2" max="12" value="6"></label>
+        <label>Distorsion: <input type="range" id="distortion" min="0" max="2" step="0.1" value="1"></label>
+        <label>Zoom: <input type="range" id="zoom" min="0.1" max="3" step="0.1" value="1.5"></label>
+        <button id="randomize">Randomiser</button>
+        <button id="reset">Reset</button>
+        <button id="autoMode">Auto Mode</button>
+    </div>
+    
+    <a href="index.html" class="back-btn">← Retour à Algorave</a>
+    
+    <canvas id="kaleidoscopeCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('kaleidoscopeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Controls
+        const modeSelect = document.getElementById('mode');
+        const speedSlider = document.getElementById('speed');
+        const complexitySlider = document.getElementById('complexity');
+        const distortionSlider = document.getElementById('distortion');
+        const zoomSlider = document.getElementById('zoom');
+        const randomizeBtn = document.getElementById('randomize');
+        const resetBtn = document.getElementById('reset');
+        const autoModeBtn = document.getElementById('autoMode');
+        const currentModeSpan = document.getElementById('currentMode');
+        
+        let time = 0;
+        let animationId;
+        let isAutoMode = false;
+        let autoModeTimer = 0;
+        let autoModeInterval = 3000; // Change toutes les 3 secondes
+        
+        // Variables pour les transitions fluides
+        let targetValues = {
+            speed: 2,
+            complexity: 6,
+            distortion: 1,
+            zoom: 1.5
+        };
+        let currentValues = {
+            speed: 2,
+            complexity: 6,
+            distortion: 1,
+            zoom: 1.5
+        };
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        class QuantumKaleidoscope {
+            constructor() {
+                this.centerX = canvas.width / 2;
+                this.centerY = canvas.height / 2;
+                this.radius = Math.min(canvas.width, canvas.height) / 2;
+            }
+            
+            getColor(mode, t, distance, angle) {
+                const phase = time * 0.01;
+                
+                switch(mode) {
+                    case 'hypnosis':
+                        const r = Math.sin(t + phase) * 127 + 128;
+                        const g = Math.sin(t + phase + 2) * 127 + 128;
+                        const b = Math.sin(t + phase + 4) * 127 + 128;
+                        return `rgb(${r},${g},${b})`;
+                        
+                    case 'fractal':
+                        const intensity = Math.sin(distance * 0.1 + phase) * 127 + 128;
+                        return `rgb(${intensity},${intensity * 0.7},${intensity * 0.9})`;
+                        
+                    case 'rainbow':
+                        const hue = (angle * 180 / Math.PI + time) % 360;
+                        return `hsl(${hue}, 100%, 50%)`;
+                        
+                    case 'cosmic':
+                        const cosmic = Math.sin(distance * 0.05 + phase) * 127 + 128;
+                        return `rgb(${cosmic * 0.3},${cosmic * 0.7},${cosmic})`;
+                        
+                    case 'psychedelic':
+                        const r2 = Math.sin(t * 3 + phase) * 127 + 128;
+                        const g2 = Math.sin(t * 5 + phase + 1) * 127 + 128;
+                        const b2 = Math.sin(t * 7 + phase + 2) * 127 + 128;
+                        return `rgb(${r2},${g2},${b2})`;
+                        
+                    default:
+                        return `rgb(255,255,255)`;
+                }
+            }
+            
+            drawSegment(angle, segments) {
+                ctx.save();
+                ctx.translate(this.centerX, this.centerY);
+                ctx.rotate(angle);
+                
+                const mode = modeSelect.value;
+                const complexity = parseInt(complexitySlider.value);
+                const distortion = parseFloat(distortionSlider.value);
+                const zoom = parseFloat(zoomSlider.value);
+                
+                ctx.beginPath();
+                
+                for (let r = 0; r < this.radius; r += 2) {
+                    for (let a = 0; a < Math.PI * 2 / segments; a += 0.05) {
+                        // Calculs quantiques psychédéliques
+                        const waveX = Math.sin(a * complexity + time * 0.02) * distortion;
+                        const waveY = Math.cos(r * 0.01 + time * 0.03) * distortion;
+                        
+                        const fractalNoise = Math.sin(r * 0.02 + time * 0.01) * 
+                                           Math.cos(a * 8 + time * 0.015);
+                        
+                        const x = (r + fractalNoise * 20) * Math.cos(a) * zoom + waveX * 30;
+                        const y = (r + fractalNoise * 20) * Math.sin(a) * zoom + waveY * 30;
+                        
+                        // Distorsion temporelle
+                        const timeDistort = Math.sin(time * 0.01 + r * 0.01) * 10;
+                        const finalX = x + timeDistort;
+                        const finalY = y + timeDistort;
+                        
+                        const distance = Math.sqrt(finalX * finalX + finalY * finalY);
+                        const t = distance * 0.01 + a * complexity;
+                        
+                        ctx.fillStyle = this.getColor(mode, t, distance, a);
+                        ctx.fillRect(finalX - 1, finalY - 1, 2, 2);
+                        
+                        // Effet de feedback
+                        if (Math.random() < 0.01) {
+                            ctx.globalAlpha = 0.3;
+                            ctx.fillStyle = this.getColor(mode, t + Math.PI, distance, a);
+                            ctx.fillRect(finalX - 3, finalY - 3, 6, 6);
+                            ctx.globalAlpha = 1;
+                        }
+                    }
+                }
+                
+                ctx.restore();
+            }
+            
+            draw() {
+                // Effet de traînée psychédélique
+                ctx.globalAlpha = 0.95;
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalAlpha = 1;
+                
+                this.centerX = canvas.width / 2;
+                this.centerY = canvas.height / 2;
+                this.radius = Math.min(canvas.width, canvas.height) / 2;
+                
+                const segments = parseInt(complexitySlider.value);
+                
+                // Dessiner tous les segments du kaléidoscope
+                for (let i = 0; i < segments; i++) {
+                    const angle = (i * 2 * Math.PI) / segments;
+                    this.drawSegment(angle, segments);
+                }
+                
+                // Effet de distorsion centrale
+                ctx.save();
+                ctx.translate(this.centerX, this.centerY);
+                ctx.globalAlpha = 0.7;
+                
+                const centralRadius = 50 + Math.sin(time * 0.02) * 20;
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, centralRadius);
+                gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
+                gradient.addColorStop(0.5, 'rgba(255,0,255,0.4)');
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, centralRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+        
+        const kaleidoscope = new QuantumKaleidoscope();
+        
+        function animate() {
+            // Gestion de l'auto mode
+            if (isAutoMode) {
+                autoModeTimer += 16; // ~60fps
+                if (autoModeTimer >= autoModeInterval) {
+                    autoModeTimer = 0;
+                    generateNewTargets();
+                }
+                
+                // Interpolation fluide vers les valeurs cibles
+                const lerpFactor = 0.02;
+                currentValues.speed = lerp(currentValues.speed, targetValues.speed, lerpFactor);
+                currentValues.complexity = lerp(currentValues.complexity, targetValues.complexity, lerpFactor);
+                currentValues.distortion = lerp(currentValues.distortion, targetValues.distortion, lerpFactor);
+                currentValues.zoom = lerp(currentValues.zoom, targetValues.zoom, lerpFactor);
+                
+                // Mise à jour des sliders visuellement
+                speedSlider.value = currentValues.speed.toFixed(1);
+                complexitySlider.value = Math.round(currentValues.complexity);
+                distortionSlider.value = currentValues.distortion.toFixed(1);
+                zoomSlider.value = currentValues.zoom.toFixed(1);
+            }
+            
+            const speed = isAutoMode ? currentValues.speed : parseFloat(speedSlider.value);
+            time += speed;
+            
+            kaleidoscope.draw();
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function lerp(start, end, factor) {
+            return start + (end - start) * factor;
+        }
+        
+        function generateNewTargets() {
+            const modes = ['hypnosis', 'fractal', 'rainbow', 'cosmic', 'psychedelic'];
+            modeSelect.value = modes[Math.floor(Math.random() * modes.length)];
+            updateModeDisplay();
+            
+            targetValues.speed = 0.5 + Math.random() * 4.5;
+            targetValues.complexity = 2 + Math.random() * 10;
+            targetValues.distortion = Math.random() * 2;
+            targetValues.zoom = 0.1 + Math.random() * 2.9;
+        }
+        
+        function randomizeSettings() {
+            const modes = ['hypnosis', 'fractal', 'rainbow', 'cosmic', 'psychedelic'];
+            modeSelect.value = modes[Math.floor(Math.random() * modes.length)];
+            speedSlider.value = (Math.random() * 4.5 + 0.5).toFixed(1);
+            complexitySlider.value = Math.floor(Math.random() * 10 + 3);
+            distortionSlider.value = (Math.random() * 2).toFixed(1);
+            zoomSlider.value = (Math.random() * 2.9 + 0.1).toFixed(1);
+            updateModeDisplay();
+        }
+        
+        function resetSettings() {
+            modeSelect.value = 'hypnosis';
+            speedSlider.value = '2';
+            complexitySlider.value = '6';
+            distortionSlider.value = '1';
+            zoomSlider.value = '1.5';
+            time = 0;
+            updateModeDisplay();
+        }
+        
+        function updateModeDisplay() {
+            const modeNames = {
+                'hypnosis': 'Hypnose',
+                'fractal': 'Fractale Pure',
+                'rainbow': 'Arc-en-ciel',
+                'cosmic': 'Cosmique',
+                'psychedelic': 'Psychédélique'
+            };
+            currentModeSpan.textContent = modeNames[modeSelect.value] || 'Hypnose';
+        }
+        
+        // Event listeners
+        modeSelect.addEventListener('change', updateModeDisplay);
+        complexitySlider.addEventListener('input', () => {
+            kaleidoscope.complexity = parseInt(complexitySlider.value);
+        });
+        zoomSlider.addEventListener('input', () => {
+            kaleidoscope.zoom = parseFloat(zoomSlider.value);
+        });
+        randomizeBtn.addEventListener('click', randomizeSettings);
+        resetBtn.addEventListener('click', resetSettings);
+        
+        autoModeBtn.addEventListener('click', () => {
+            isAutoMode = !isAutoMode;
+            autoModeBtn.textContent = isAutoMode ? 'Stop Auto' : 'Auto Mode';
+            autoModeBtn.style.background = isAutoMode ? '#ff4444' : '#333';
+            
+            if (isAutoMode) {
+                // Initialiser les valeurs actuelles
+                currentValues.speed = parseFloat(speedSlider.value);
+                currentValues.complexity = parseInt(complexitySlider.value);
+                currentValues.distortion = parseFloat(distortionSlider.value);
+                currentValues.zoom = parseFloat(zoomSlider.value);
+                generateNewTargets();
+            }
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Interaction tactile/souris pour ajouter de la magie
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Ajouter une petite perturbation basée sur la souris
+            time += (mouseX + mouseY) * 0.0001;
+        });
+        
+        // Initialize
+        resizeCanvas();
+        updateModeDisplay();
+        animate();
+    </script>
+</body>
+</html>
