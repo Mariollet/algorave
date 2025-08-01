@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Kaleidoscope - Algorave</title>
+    <link rel="stylesheet" href="assets/css/algorave.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* Styles spécifiques - priorité sur algorave.css */
         body {
-            margin: 0;
-            padding: 0;
-            background: #0a0a0a;
-            overflow: hidden;
-            font-family: 'JetBrains Mono', monospace;
-            color: #ffffff;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #0a0a0a !important;
+            overflow: hidden !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            color: #ffffff !important;
         }
         
         canvas {
@@ -212,7 +214,12 @@
         <button id="autoMode">Auto Mode</button>
     </div>
     
-    <a href="index.html" class="back-btn">← Retour à Algorave</a>
+        <a href="index.html" class="back-btn">← Retour à Algorave</a>
+    
+    <!-- Bouton fullscreen -->
+    <button class="atom-fullscreen-btn" id="fullscreenBtn" title="Mode plein écran">
+        ⛶
+    </button>
     
     <canvas id="kaleidoscopeCanvas"></canvas>
 
@@ -498,6 +505,47 @@
             
             // Ajouter une petite perturbation basée sur la souris
             time += (mouseX + mouseY) * 0.0001;
+        });
+        
+        // Fullscreen functionality
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        let isFullscreen = false;
+        
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        function toggleFullscreen() {
+            isFullscreen = !isFullscreen;
+            
+            if (isFullscreen) {
+                document.body.classList.add('fullscreen-mode');
+                fullscreenBtn.innerHTML = '⛉'; // Icône exit fullscreen
+                fullscreenBtn.title = 'Quitter le plein écran';
+                
+                // Optionnel: Utiliser l'API Fullscreen du navigateur
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                }
+            } else {
+                document.body.classList.remove('fullscreen-mode');
+                fullscreenBtn.innerHTML = '⛶'; // Icône fullscreen
+                fullscreenBtn.title = 'Mode plein écran';
+                
+                // Quitter le fullscreen du navigateur
+                if (document.exitFullscreen && document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+            }
+            
+            // Redimensionner le canvas
+            resizeCanvas();
+        }
+        
+        // Écouter les changements de fullscreen du navigateur
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && isFullscreen) {
+                // L'utilisateur a quitté le fullscreen avec Échap
+                toggleFullscreen();
+            }
         });
         
         // Initialize

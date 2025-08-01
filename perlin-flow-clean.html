@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perlin Flow Field - Algorave</title>
+    <link rel="stylesheet" href="assets/css/algorave.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Styles spécifiques - priorité sur algorave.css */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #0a0a0a !important;
+            overflow: hidden !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            color: #ffffff !important;
+        }
+        
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        /* === ATOMIC DESIGN COMPONENTS === */
+        
+        /* Atoms - Éléments de base */
+        .atom-glass-panel {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+        }
+        
+        .atom-title-primary {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #10b981;
+        }
+        
+        .atom-title-secondary {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+        }
+        
+        .atom-text-description {
+            margin: 8px 0;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+        
+        .atom-label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #ffffff;
+        }
+        
+        .atom-select {
+            width: 100%;
+            margin-top: 4px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .atom-select:focus {
+            outline: none;
+            border-color: rgba(255, 0, 110, 0.5);
+            box-shadow: 0 0 0 2px rgba(255, 0, 110, 0.2);
+        }
+        
+        .atom-slider {
+            width: 100%;
+            margin-top: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .atom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        .atom-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        .atom-button {
+            margin: 8px 8px 8px 0;
+            padding: 10px 16px;
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.2), rgba(59, 130, 246, 0.2));
+            color: #ffffff;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+        }
+        
+        .atom-button:hover {
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.4), rgba(59, 130, 246, 0.4));
+            border-color: rgba(255, 0, 110, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 0, 110, 0.3);
+        }
+        
+        .atom-button--active {
+            background: linear-gradient(45deg, rgba(255, 0, 110, 0.6), rgba(59, 130, 246, 0.6));
+            border-color: rgba(255, 0, 110, 0.8);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.4);
+        }
+        
+        .atom-button--auto-active {
+            background: #ff4444 !important;
+            border-color: #ff6666 !important;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.4) !important;
+        }
+        
+        /* Molecules - Groupes d'atomes */
+        .molecule-info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            padding: 24px;
+            max-width: 320px;
+        }
+        
+        .molecule-controls-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            z-index: 100;
+            padding: 24px;
+            min-width: 280px;
+        }
+        
+        .molecule-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        
+        /* Components Navigation */
+        .atom-back-button {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+        
+        .atom-back-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="molecule-info-panel atom-glass-panel">
+        <h3 class="atom-title-primary">Perlin Flow Field</h3>
+        <p class="atom-text-description">Champs vectoriels générés par le bruit de Perlin créent des flux organiques hypnotiques. Les particules suivent les gradients naturels pour former des patterns fluides émergents.</p>
+        <p class="atom-text-description"><strong>Particules:</strong> <span id="particleCount">2000</span></p>
+        <p class="atom-text-description"><strong>Palette:</strong> <span id="currentPalette">Position</span></p>
+    </div>
+    
+    <div class="molecule-controls-panel atom-glass-panel">
+        <h4 class="atom-title-secondary">Contrôles</h4>
+        
+        <label class="atom-label">Mode: 
+            <select id="drawMode" class="atom-select">
+                <option value="lines" selected>Lignes</option>
+                <option value="dots">Points</option>
+                <option value="glow">Lueur</option>
+            </select>
+        </label>
+        
+        <label class="atom-label">Palette: 
+            <select id="colorMode" class="atom-select">
+                <option value="position" selected>Position</option>
+                <option value="rainbow">Arc-en-ciel</option>
+                <option value="psychedelic">Psychédélique</option>
+                <option value="velocity">Vélocité</option>
+                <option value="fire">Feu</option>
+                <option value="ocean">Océan</option>
+            </select>
+        </label>
+        
+        <label class="atom-label">Particules: <input type="range" id="numParticles" class="atom-slider" min="100" max="5000" value="2000"></label>
+        <label class="atom-label">Vitesse: <input type="range" id="speed" class="atom-slider" min="0.1" max="3.0" step="0.1" value="1.0"></label>
+        <label class="atom-label">Force: <input type="range" id="force" class="atom-slider" min="0.1" max="5.0" step="0.1" value="1.0"></label>
+        <label class="atom-label">Échelle: <input type="range" id="noiseScale" class="atom-slider" min="100" max="1000" value="300"></label>
+        <label class="atom-label">Vitesse Auto: <input type="range" id="autoSpeed" class="atom-slider" min="0.2" max="3.0" step="0.1" value="1.0"></label>
+        
+        <div class="molecule-button-group">
+            <button id="randomBtn" class="atom-button">Randomiser</button>
+            <button id="resetBtn" class="atom-button">Reset</button>
+            <button id="autoBtn" class="atom-button">Auto Mode</button>
+        </div>
+    </div>
+    
+    <a href="index.html" class="atom-back-button">← Retour à Algorave</a>
+    
+    <!-- Bouton fullscreen -->
+    <button class="atom-fullscreen-btn" id="fullscreenBtn" title="Mode plein écran">
+        ⛶
+    </button>
+    
+    <canvas id="flowCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('flowCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Controls
+        const numParticlesSlider = document.getElementById('numParticles');
+        const speedSlider = document.getElementById('speed');
+        const scaleSlider = document.getElementById('noiseScale');
+        const forceSlider = document.getElementById('force');
+        const drawModeSelect = document.getElementById('drawMode');
+        const colorModeSelect = document.getElementById('colorMode');
+        const particleCountSpan = document.getElementById('particleCount');
+        const autoSpeedSlider = document.getElementById('autoSpeed');
+
+        let particles = [];
+        let time = 0;
+        let flowField = [];
+        let cols, rows;
+        let flowScale = 300;
+        let particleSpeed = 1;
+        let isAutoMode = false;
+        let autoSpeed = 1.0;
+        let autoInterval;
+
+        // Presets pour l'auto mode - Sans trainées
+        const presets = [
+            { mode: 'lines', color: 'rainbow', particles: 1000, speed: 2.5, scale: 400, force: 1.2, name: 'Lignes Rainbow' },
+            { mode: 'dots', color: 'psychedelic', particles: 3000, speed: 2.0, scale: 200, force: 0.8, name: 'Nuages Psyché' },
+            { mode: 'glow', color: 'fire', particles: 1500, speed: 1.0, scale: 250, force: 2.0, name: 'Lueur de Feu' },
+            { mode: 'lines', color: 'velocity', particles: 800, speed: 3.0, scale: 350, force: 1.5, name: 'Lignes Vélocité' },
+            { mode: 'dots', color: 'ocean', particles: 2500, speed: 1.8, scale: 300, force: 0.6, name: 'Vagues Océan' },
+            { mode: 'glow', color: 'position', particles: 2000, speed: 1.2, scale: 150, force: 1.8, name: 'Lueur Position' }
+        ];
+        
+        let presetIndex = 0;
+
+        class Particle {
+            constructor() {
+                this.reset();
+                this.prevX = this.x;
+                this.prevY = this.y;
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = 0;
+                this.vy = 0;
+                this.life = Math.random() * 100 + 50;
+                this.maxLife = this.life;
+            }
+
+            update() {
+                // Get flow field vector
+                const col = Math.floor(this.x / 20);
+                const row = Math.floor(this.y / 20);
+                
+                if (col >= 0 && col < cols && row >= 0 && row < rows) {
+                    const index = col + row * cols;
+                    if (flowField[index]) {
+                        this.vx = flowField[index].x * particleSpeed;
+                        this.vy = flowField[index].y * particleSpeed;
+                    }
+                }
+
+                this.prevX = this.x;
+                this.prevY = this.y;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.life--;
+
+                // Wrap around edges
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+
+                // Reset if life is over
+                if (this.life <= 0) {
+                    this.reset();
+                }
+            }
+
+            getColor() {
+                const colorMode = colorModeSelect.value;
+                const alpha = Math.min(this.life / this.maxLife, 0.8);
+
+                switch(colorMode) {
+                    case 'velocity':
+                        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                        const speedNorm = Math.min(speed * 50, 255);
+                        return `rgba(${255 - speedNorm}, ${speedNorm}, ${100}, ${alpha})`;
+                    
+                    case 'position':
+                        const r = Math.floor((this.x / canvas.width) * 255);
+                        const g = Math.floor((this.y / canvas.height) * 255);
+                        return `rgba(${r}, ${g}, 150, ${alpha})`;
+                    
+                    case 'rainbow':
+                        const hue = ((this.x + this.y) / (canvas.width + canvas.height)) * 360;
+                        return `hsla(${hue}, 70%, 60%, ${alpha})`;
+                    
+                    case 'psychedelic':
+                        const phase = (this.x + this.y + time * 2) * 0.01;
+                        const rp = Math.floor(128 + 127 * Math.sin(phase));
+                        const gp = Math.floor(128 + 127 * Math.sin(phase + 2.1));
+                        const bp = Math.floor(128 + 127 * Math.sin(phase + 4.2));
+                        return `rgba(${rp}, ${gp}, ${bp}, ${alpha})`;
+                    
+                    case 'fire':
+                        const fireIntensity = Math.sqrt(this.vx * this.vx + this.vy * this.vy) * 100;
+                        const r2 = Math.min(255, 200 + fireIntensity);
+                        const g2 = Math.min(200, fireIntensity);
+                        const b2 = Math.min(100, fireIntensity * 0.3);
+                        return `rgba(${r2}, ${g2}, ${b2}, ${alpha})`;
+                    
+                    case 'ocean':
+                        const waveIntensity = Math.sqrt(this.vx * this.vx + this.vy * this.vy) * 80;
+                        return `rgba(${waveIntensity * 0.3}, ${100 + waveIntensity}, ${150 + waveIntensity}, ${alpha})`;
+                    
+                    default:
+                        return `rgba(255, 255, 255, ${alpha})`;
+                }
+            }
+
+            draw() {
+                const drawMode = drawModeSelect.value;
+                ctx.fillStyle = this.getColor();
+                ctx.strokeStyle = this.getColor();
+
+                switch(drawMode) {
+                    case 'dots':
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, 1, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    
+                    case 'lines':
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x + this.vx * 10, this.y + this.vy * 10);
+                        ctx.stroke();
+                        break;
+                    
+                    case 'glow':
+                        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 8);
+                        gradient.addColorStop(0, this.getColor());
+                        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                }
+            }
+        }
+
+        // Simplified Perlin noise
+        function noise(x, y, z) {
+            // Simple noise function - in a real implementation you'd use proper Perlin noise
+            return Math.sin(x * 0.01) * Math.cos(y * 0.01) * Math.sin(z * 0.1);
+        }
+
+        function updateFlowField() {
+            flowField = [];
+            cols = Math.floor(canvas.width / 20);
+            rows = Math.floor(canvas.height / 20);
+
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const angle = noise(x * flowScale, y * flowScale, time * 0.01) * Math.PI * 2;
+                    const vector = {
+                        x: Math.cos(angle),
+                        y: Math.sin(angle)
+                    };
+                    flowField.push(vector);
+                }
+            }
+        }
+
+        function initParticles() {
+            const numParticles = parseInt(numParticlesSlider.value);
+            particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+            particleCountSpan.textContent = numParticles;
+            updateUI();
+        }
+
+        function updateUI() {
+            const paletteNames = {
+                'position': 'Position',
+                'rainbow': 'Arc-en-ciel',
+                'psychedelic': 'Psychédélique',
+                'velocity': 'Vélocité',
+                'fire': 'Feu',
+                'ocean': 'Océan'
+            };
+            document.getElementById('currentPalette').textContent = paletteNames[colorModeSelect.value] || 'Position';
+        }
+
+        function startAutoMode() {
+            if (!isAutoMode) return;
+            
+            const preset = presets[presetIndex];
+            const currentValues = {
+                particles: parseInt(numParticlesSlider.value),
+                speed: parseFloat(speedSlider.value),
+                scale: parseInt(scaleSlider.value),
+                force: parseFloat(forceSlider.value)
+            };
+            
+            // Changer immédiatement les modes et réinitialiser les particules
+            drawModeSelect.value = preset.mode;
+            colorModeSelect.value = preset.color;
+            updateUI(); // Mettre à jour l'affichage de la palette
+            
+            // Réinitialiser immédiatement les particules avec le nouveau nombre
+            if (currentValues.particles !== preset.particles) {
+                numParticlesSlider.value = preset.particles;
+                initParticles(); // Changement instantané des particules
+            }
+            
+            // Transition smooth pour les autres paramètres (speed, scale et force)
+            const duration = 2000; // 2 secondes de transition
+            const steps = 60; // 60 fps
+            const stepDuration = duration / steps;
+            let currentStep = 0;
+            
+            function animateTransition() {
+                currentStep++;
+                const progress = currentStep / steps;
+                const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out
+                
+                // Interpoler speed, scale et force (pas les particules)
+                const newSpeed = currentValues.speed + (preset.speed - currentValues.speed) * easeProgress;
+                const newScale = Math.round(currentValues.scale + (preset.scale - currentValues.scale) * easeProgress);
+                const newForce = currentValues.force + (preset.force - currentValues.force) * easeProgress;
+                
+                // Mettre à jour les sliders
+                speedSlider.value = newSpeed.toFixed(1);
+                scaleSlider.value = newScale;
+                forceSlider.value = newForce.toFixed(1);
+                
+                if (currentStep < steps && isAutoMode) {
+                    setTimeout(animateTransition, stepDuration);
+                } else if (isAutoMode) {
+                    // Transition terminée, passer au preset suivant
+                    presetIndex = (presetIndex + 1) % presets.length;
+                    // Pause avant le prochain preset
+                    autoInterval = setTimeout(startAutoMode, 3000 / autoSpeed);
+                }
+            }
+            
+            animateTransition();
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            updateFlowField();
+        }
+
+        function animate() {
+            // Semi-transparent background for trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update flow field
+            flowScale = parseInt(scaleSlider.value);
+            particleSpeed = parseFloat(speedSlider.value);
+            updateFlowField();
+
+            // Update and draw particles
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            time += 1;
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        numParticlesSlider.addEventListener('input', initParticles);
+        
+        // Mettre à jour l'affichage de la palette quand elle change
+        colorModeSelect.addEventListener('change', updateUI);
+        
+        autoSpeedSlider.addEventListener('input', (e) => {
+            autoSpeed = parseFloat(e.target.value);
+        });
+
+        document.getElementById('autoBtn').addEventListener('click', () => {
+            isAutoMode = !isAutoMode;
+            const btn = document.getElementById('autoBtn');
+            
+            if (isAutoMode) {
+                btn.textContent = 'Stop Auto';
+                btn.classList.add('atom-button--auto-active');
+                btn.classList.remove('atom-button--active');
+                startAutoMode();
+            } else {
+                btn.textContent = 'Auto Mode';
+                btn.classList.remove('atom-button--auto-active', 'atom-button--active');
+                if (autoInterval) {
+                    clearTimeout(autoInterval);
+                }
+            }
+            updateUI();
+        });
+        
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            if (!isAutoMode) {
+                // Paramètres aléatoires
+                numParticlesSlider.value = Math.floor(Math.random() * 2000) + 500;
+                speedSlider.value = Math.random() * 3 + 0.5;
+                scaleSlider.value = Math.random() * 300 + 100;
+                
+                // Mode aléatoire
+                const modes = ['lines', 'dots', 'glow'];
+                drawModeSelect.value = modes[Math.floor(Math.random() * modes.length)];
+                
+                // Couleur aléatoire
+                const colors = ['velocity', 'position', 'rainbow', 'fire', 'ocean', 'psychedelic'];
+                colorModeSelect.value = colors[Math.floor(Math.random() * colors.length)];
+                
+                initParticles();
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            // Arrêter l'auto mode
+            isAutoMode = false;
+            const autoBtn = document.getElementById('autoBtn');
+            autoBtn.textContent = 'Auto Mode';
+            autoBtn.classList.remove('atom-button--auto-active', 'atom-button--active');
+            if (autoInterval) {
+                clearTimeout(autoInterval);
+            }
+            
+            // Reset aux valeurs par défaut
+            numParticlesSlider.value = 2000;
+            speedSlider.value = 1.0;
+            scaleSlider.value = 300;
+            drawModeSelect.value = 'lines';
+            colorModeSelect.value = 'position';
+            
+            initParticles();
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize
+        resizeCanvas();
+        initParticles();
+        
+        // Start with black background
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Fullscreen functionality
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        let isFullscreen = false;
+        
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        function toggleFullscreen() {
+            isFullscreen = !isFullscreen;
+            
+            if (isFullscreen) {
+                document.body.classList.add('fullscreen-mode');
+                fullscreenBtn.innerHTML = '⛉'; // Icône exit fullscreen
+                fullscreenBtn.title = 'Quitter le plein écran';
+                
+                // Optionnel: Utiliser l'API Fullscreen du navigateur
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                }
+            } else {
+                document.body.classList.remove('fullscreen-mode');
+                fullscreenBtn.innerHTML = '⛶'; // Icône fullscreen
+                fullscreenBtn.title = 'Mode plein écran';
+                
+                // Quitter le fullscreen du navigateur
+                if (document.exitFullscreen && document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+            }
+            
+            // Redimensionner le canvas
+            resizeCanvas();
+        }
+        
+        // Écouter les changements de fullscreen du navigateur
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && isFullscreen) {
+                // L'utilisateur a quitté le fullscreen avec Échap
+                toggleFullscreen();
+            }
+        });
+        
+        animate();
+    </script>
+</body>
+</html>

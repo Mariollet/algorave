@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorave - Visualisations Mathématiques</title>
-    <link rel="stylesheet" href="assets/css/algorave.css">
+    <link rel="stylesheet" href="assets/css/index-bundle.css">
 </head>
 <body>
     <!-- Canvas pour le bruit de Perlin subtil -->
@@ -16,7 +16,7 @@
     <div class="container">
         <div class="header">
             <h1>Algorave</h1>
-            <p class="subtitle">collection // fractales & expériences visuelles algorithmiques</p>
+            <p class="subtitle">collection // fractales // expériences visuelles <br>algorithmiques</p>
         </div>
         
         <div class="gallery">
@@ -38,6 +38,26 @@
                     dans l'univers algorithmique.
                 </p>
                 <span class="btn">execute →</span>
+            </div>
+            
+            <div class="card" onclick="window.location.href='perlin-flow-clean.html'">
+                <h3>Perlin Flow Field</h3>
+                <p>
+                    Champs vectoriels organiques animés par le bruit de Perlin. 
+                    Milliers de particules suivent des flux naturels créant des 
+                    patterns émergents fluides et hypnotiques en temps réel.
+                </p>
+                <span class="btn">flow →</span>
+            </div>
+            
+            <div class="card" onclick="window.location.href='cellular-automata.html'">
+                <h3>Cellular Automata</h3>
+                <p>
+                    Automates cellulaires évolutifs selon les règles de Wolfram. 
+                    Génération après génération, des motifs complexes émergent 
+                    de règles mathématiques simples créant le chaos organisé.
+                </p>
+                <span class="btn">evolve →</span>
             </div>
         </div>
     </div>
@@ -145,6 +165,139 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         animate();
+
+        // Effet spotlight circulaire précis
+        const range = 80; // Rayon du spotlight en pixels
+
+        function createSpotlightEffect(card, mouseX, mouseY, isSpecial) {
+            const rect = card.getBoundingClientRect();
+            const baseColor = isSpecial ? '16, 185, 129' : '255, 0, 110';
+            
+            // Supprimer les anciens box-shadows spotlight s'ils existent
+            card.style.boxShadow = '';
+            
+            // Créer un effet de bordure circulaire avec box-shadow
+            const shadows = [];
+            
+            // Calculer les points de bordure qui sont dans le range
+            const borderPoints = [];
+            const step = 2; // Précision du calcul
+            
+            // Bordure du haut
+            for (let x = rect.left; x <= rect.right; x += step) {
+                const distance = Math.sqrt(Math.pow(x - mouseX, 2) + Math.pow(rect.top - mouseY, 2));
+                if (distance <= range) {
+                    const intensity = Math.max(0.2, 1 - (distance / range));
+                    borderPoints.push({
+                        x: x - rect.left,
+                        y: 0,
+                        intensity,
+                        side: 'top'
+                    });
+                }
+            }
+            
+            // Bordure du bas
+            for (let x = rect.left; x <= rect.right; x += step) {
+                const distance = Math.sqrt(Math.pow(x - mouseX, 2) + Math.pow(rect.bottom - mouseY, 2));
+                if (distance <= range) {
+                    const intensity = Math.max(0.2, 1 - (distance / range));
+                    borderPoints.push({
+                        x: x - rect.left,
+                        y: rect.height,
+                        intensity,
+                        side: 'bottom'
+                    });
+                }
+            }
+            
+            // Bordure gauche
+            for (let y = rect.top; y <= rect.bottom; y += step) {
+                const distance = Math.sqrt(Math.pow(rect.left - mouseX, 2) + Math.pow(y - mouseY, 2));
+                if (distance <= range) {
+                    const intensity = Math.max(0.2, 1 - (distance / range));
+                    borderPoints.push({
+                        x: 0,
+                        y: y - rect.top,
+                        intensity,
+                        side: 'left'
+                    });
+                }
+            }
+            
+            // Bordure droite
+            for (let y = rect.top; y <= rect.bottom; y += step) {
+                const distance = Math.sqrt(Math.pow(rect.right - mouseX, 2) + Math.pow(y - mouseY, 2));
+                if (distance <= range) {
+                    const intensity = Math.max(0.2, 1 - (distance / range));
+                    borderPoints.push({
+                        x: rect.width,
+                        y: y - rect.top,
+                        intensity,
+                        side: 'right'
+                    });
+                }
+            }
+            
+            if (borderPoints.length > 0) {
+                // Créer un effet de lueur avec plusieurs box-shadows
+                const maxIntensity = Math.max(...borderPoints.map(p => p.intensity));
+                
+                // Effet global si dans le range
+                const centerDistance = Math.sqrt(
+                    Math.pow(mouseX - (rect.left + rect.width/2), 2) + 
+                    Math.pow(mouseY - (rect.top + rect.height/2), 2)
+                );
+                
+                if (centerDistance <= range + 50) {
+                    const globalIntensity = Math.max(0.1, 1 - (centerDistance / (range + 50)));
+                    shadows.push(`0 0 ${20 * globalIntensity}px rgba(${baseColor}, ${globalIntensity * 0.6})`);
+                    shadows.push(`inset 0 0 ${30 * maxIntensity}px rgba(${baseColor}, ${maxIntensity * 0.3})`);
+                    
+                    // Bordure lumineuse
+                    card.style.borderColor = `rgba(${baseColor}, ${maxIntensity * 0.8})`;
+                    card.style.borderWidth = `${1 + maxIntensity}px`;
+                }
+                
+                card.style.boxShadow = shadows.join(', ');
+            } else {
+                // Reset si aucun point dans le range
+                card.style.borderColor = '';
+                card.style.borderWidth = '';
+                card.style.boxShadow = '';
+            }
+        }
+
+        function handleMouseMove(event) {
+            const cards = document.querySelectorAll('.card');
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const isSpecial = card.classList.contains('special-card');
+                
+                // Vérifier si la souris est dans la zone d'influence de la carte
+                const centerDistance = Math.sqrt(
+                    Math.pow(mouseX - (rect.left + rect.width/2), 2) + 
+                    Math.pow(mouseY - (rect.top + rect.height/2), 2)
+                );
+                
+                if (centerDistance <= range + Math.max(rect.width, rect.height)/2) {
+                    createSpotlightEffect(card, mouseX, mouseY, isSpecial);
+                } else {
+                    // Reset complet si trop loin
+                    card.style.borderColor = '';
+                    card.style.borderWidth = '';
+                    card.style.boxShadow = '';
+                }
+            });
+        }
+
+        // Activer l'effet quand la page est chargée
+        window.addEventListener('load', () => {
+            document.addEventListener('mousemove', handleMouseMove);
+        });
     </script>
 </body>
 </html>

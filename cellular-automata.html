@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cellular Automata - Algorave</title>
+    <link rel="stylesheet" href="assets/css/algorave.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Styles spécifiques - priorité sur algorave.css */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #0a0a0a !important;
+            overflow: hidden !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            color: #ffffff !important;
+        }
+        
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            background: #0a0a0a;
+        }
+        
+        .control-group {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+        }
+        
+        /* Boutons avec style du framework */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+        
+        .button-group.wide {
+            grid-template-columns: 1fr 1fr;
+        }
+    </style>
+</head>
+<body>
+    <!-- Panneau d'information -->
+    <div class="info">
+        <h3>Automates Cellulaires</h3>
+        <p><strong>Règle:</strong> <span id="currentRule">Game of Life</span></p>
+        <p><strong>Génération:</strong> <span id="generation">0</span></p>
+        <p>Patterns émergents à partir de règles simples. Cliquez pour dessiner des cellules.</p>
+    </div>
+    
+    <!-- Panneau de contrôles -->
+    <div class="controls">
+        <h4>Cellular Automata</h4>
+        
+        <div class="control-group">
+            <label for="ruleSelect">Règle</label>
+            <select id="ruleSelect">
+                <option value="gameoflife">Game of Life</option>
+                <option value="highlife">HighLife</option>
+                <option value="seeds">Seeds</option>
+                <option value="mazectric">Mazectric</option>
+                <option value="coral">Coral</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="colorScheme">Couleurs</label>
+            <select id="colorScheme">
+                <option value="classic">Classique</option>
+                <option value="neon">Néon</option>
+                <option value="fire">Feu</option>
+                <option value="ocean">Océan</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="speed">
+                Vitesse
+                <span id="speedValue">5</span>
+            </label>
+            <input type="range" id="speed" min="1" max="10" value="5">
+        </div>
+        
+        <div class="control-group">
+            <label for="density">
+                Densité
+                <span id="densityValue">30</span>%
+            </label>
+            <input type="range" id="density" min="10" max="90" value="30">
+        </div>
+        
+        <div class="control-group">
+            <label for="cellSize">
+                Zoom
+                <span id="cellSizeValue">5</span>x
+            </label>
+            <input type="range" id="cellSize" min="0" max="1000" value="0">
+        </div>
+        
+        <div class="button-group">
+            <button id="playPause">▶ Play</button>
+            <button id="step">Step</button>
+            <button id="clear">Clear</button>
+        </div>
+        
+        <div class="button-group wide">
+            <button id="random">Generate</button>
+            <button id="autoMode">Auto Mode</button>
+        </div>
+    </div>
+    
+    <a href="index.html" class="back-btn">← Retour à Algorave</a>
+    
+    <!-- Bouton fullscreen -->
+    <button class="atom-fullscreen-btn" id="fullscreenBtn" title="Mode plein écran">
+        ⛶
+    </button>
+    
+    <canvas id="automataCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('automataCanvas');
+        const ctx = canvas.getContext('2d');
+        const ruleSelect = document.getElementById('ruleSelect');
+        const colorSchemeSelect = document.getElementById('colorScheme');
+        const densitySlider = document.getElementById('density');
+        const cellSizeSlider = document.getElementById('cellSize');
+        const playPauseBtn = document.getElementById('playPause');
+        const stepBtn = document.getElementById('step');
+        const clearBtn = document.getElementById('clear');
+        const randomBtn = document.getElementById('random');
+        const autoModeBtn = document.getElementById('autoMode');
+        const speedSlider = document.getElementById('speed');
+        const ruleSpan = document.getElementById('currentRule');
+        const genSpan = document.getElementById('generation');
+
+        let cellSize = 20; // Valeur pour zoom 0: comme ancien 750 (de base)
+        let cols, rows;
+        let grid, nextGrid;
+        let isPlaying = false;
+        let generation = 0;
+        let animationId;
+        let colorScheme = 'classic';
+        let currentRule = 'gameoflife';
+        let autoMode = false;
+        let autoModeInterval;
+
+        const rules = {
+            gameoflife: {
+                name: 'Game of Life',
+                born: [3],
+                survive: [2, 3]
+            },
+            highlife: {
+                name: 'HighLife',
+                born: [3, 6],
+                survive: [2, 3]
+            },
+            seeds: {
+                name: 'Seeds',
+                born: [2],
+                survive: []
+            },
+            mazectric: {
+                name: 'Mazectric',
+                born: [3],
+                survive: [1, 2, 3, 4]
+            },
+            coral: {
+                name: 'Coral',
+                born: [3],
+                survive: [4, 5, 6, 7, 8]
+            }
+        };
+
+        // Mise à jour des valeurs affichées
+        function updateDisplayValues() {
+            document.getElementById('speedValue').textContent = speedSlider.value;
+            document.getElementById('densityValue').textContent = densitySlider.value;
+            document.getElementById('cellSizeValue').textContent = cellSizeSlider.value;
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const newCols = Math.floor(canvas.width / cellSize);
+            const newRows = Math.floor(canvas.height / cellSize);
+            
+            // Sauvegarder l'ancienne grille
+            const oldGrid = grid;
+            const oldCols = cols;
+            const oldRows = rows;
+            
+            // Mettre à jour les dimensions
+            cols = newCols;
+            rows = newRows;
+            
+            // Redimensionner les grilles
+            initGrids();
+            
+            if (oldGrid && oldCols && oldRows) {
+                // Calculer les offsets pour centrer la copie
+                const offsetX = Math.floor((cols - oldCols) / 2);
+                const offsetY = Math.floor((rows - oldRows) / 2);
+                
+                // Copier l'ancien état en centrant
+                for (let x = 0; x < oldCols; x++) {
+                    for (let y = 0; y < oldRows; y++) {
+                        const newX = x + offsetX;
+                        const newY = y + offsetY;
+                        
+                        // Vérifier que les nouvelles coordonnées sont dans les limites
+                        if (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
+                            grid[newX][newY] = oldGrid[x][y];
+                        }
+                    }
+                }
+            }
+            
+            draw();
+        }
+
+        function initGrids() {
+            grid = Array(cols).fill().map(() => Array(rows).fill(0));
+            nextGrid = Array(cols).fill().map(() => Array(rows).fill(0));
+        }
+
+        function countNeighbors(x, y) {
+            let count = 0;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue;
+                    
+                    const nx = (x + i + cols) % cols;
+                    const ny = (y + j + rows) % rows;
+                    count += grid[nx][ny];
+                }
+            }
+            return count;
+        }
+
+        function nextGeneration() {
+            const rule = rules[currentRule];
+            
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    const neighbors = countNeighbors(x, y);
+                    const isAlive = grid[x][y] === 1;
+                    
+                    if (isAlive) {
+                        nextGrid[x][y] = rule.survive.includes(neighbors) ? 1 : 0;
+                    } else {
+                        nextGrid[x][y] = rule.born.includes(neighbors) ? 1 : 0;
+                    }
+                }
+            }
+
+            // Échanger les grilles
+            const temp = grid;
+            grid = nextGrid;
+            nextGrid = temp;
+            
+            generation++;
+            genSpan.textContent = generation;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dézoom encore plus poussé (x4)
+            // zoom 0 -> cellSize 20 (de base)
+            // zoom 500 -> cellSize 10 (moyen)
+            // zoom 750 -> cellSize 5 (petit)
+            // zoom 875 -> cellSize 2.5 (très petit)
+            // zoom 1000 -> cellSize 0.25 (extrêmement petit)
+            const zoomValue = parseInt(cellSizeSlider.value);
+            cellSize = Math.max(0.25, 20 - (zoomValue * 19.75 / 1000));
+            
+            // Choisir la couleur selon le schéma
+            let cellColor;
+            switch(colorScheme) {
+                case 'neon':
+                    cellColor = '#00ffff';
+                    break;
+                case 'fire':
+                    cellColor = '#ff4500';
+                    break;
+                case 'ocean':
+                    cellColor = '#0080ff';
+                    break;
+                default: // classic
+                    cellColor = '#00ff88';
+            }
+            
+            // Dessiner les cellules vivantes
+            ctx.fillStyle = cellColor;
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    if (grid[x][y] === 1) {
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            nextGeneration();
+            draw();
+            
+            if (isPlaying) {
+                // Nouvelle logique: vitesse de 1 (lent) à 10 (rapide)
+                const speed = parseInt(speedSlider.value);
+                const delay = 1100 - (speed * 100); // De 1000ms (lent) à 100ms (rapide)
+                
+                setTimeout(() => {
+                    animationId = requestAnimationFrame(animate);
+                }, delay);
+            }
+        }
+
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            playPauseBtn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+            
+            if (isPlaying) {
+                animate();
+            } else {
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        function clearGrid() {
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    grid[x][y] = 0;
+                }
+            }
+            generation = 0;
+            genSpan.textContent = generation;
+            draw();
+        }
+
+        function randomizeGrid() {
+            const density = parseFloat(densitySlider.value) / 100;
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    grid[x][y] = Math.random() < density ? 1 : 0;
+                }
+            }
+            generation = 0;
+            genSpan.textContent = generation;
+            draw();
+        }
+
+        function smoothTransition(element, targetValue, duration = 1000) {
+            const startValue = parseFloat(element.value);
+            const diff = targetValue - startValue;
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeProgress = 0.5 - 0.5 * Math.cos(progress * Math.PI); // Smooth ease in-out
+                
+                const currentValue = startValue + (diff * easeProgress);
+                element.value = Math.round(currentValue);
+                
+                // Déclencher l'event pour mettre à jour l'affichage
+                element.dispatchEvent(new Event('input'));
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            animate();
+        }
+
+        function toggleAutoMode() {
+            autoMode = !autoMode;
+            
+            if (autoMode) {
+                autoModeBtn.textContent = 'Stop Auto';
+                autoModeBtn.classList.add('active');
+                if (!isPlaying) {
+                    togglePlayPause(); // Démarrer l'animation
+                }
+                startAutoMode();
+            } else {
+                autoModeBtn.textContent = 'Auto Mode';
+                autoModeBtn.classList.remove('active');
+                stopAutoMode();
+            }
+        }
+
+        function startAutoMode() {
+            function changeParameters() {
+                if (!autoMode) return;
+                
+                // Changer la règle aléatoirement
+                const ruleKeys = Object.keys(rules);
+                const newRule = ruleKeys[Math.floor(Math.random() * ruleKeys.length)];
+                currentRule = newRule;
+                ruleSelect.value = newRule;
+                ruleSpan.textContent = rules[newRule].name;
+                
+                // Changer le schéma de couleurs
+                const colorSchemes = ['classic', 'neon', 'fire', 'ocean'];
+                const newColorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
+                colorScheme = newColorScheme;
+                colorSchemeSelect.value = newColorScheme;
+                
+                // Transitions smooth pour vitesse et densité
+                const newSpeed = Math.floor(Math.random() * 10) + 1;
+                const newDensity = Math.floor(Math.random() * 60) + 20; // 20-80%
+                
+                smoothTransition(speedSlider, newSpeed, 2000);
+                smoothTransition(densitySlider, newDensity, 2000);
+                
+                // Générer nouvelle grille après un délai
+                setTimeout(() => {
+                    if (autoMode) randomizeGrid();
+                }, 1000);
+                
+                draw();
+            }
+            
+            // Changer les paramètres immédiatement puis tous les 8 secondes
+            changeParameters();
+            autoModeInterval = setInterval(changeParameters, 8000);
+        }
+
+        function stopAutoMode() {
+            if (autoModeInterval) {
+                clearInterval(autoModeInterval);
+                autoModeInterval = null;
+            }
+        }
+
+        // Event listeners
+        canvas.addEventListener('click', (e) => {
+            if (isPlaying) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / cellSize);
+            const y = Math.floor((e.clientY - rect.top) / cellSize);
+            
+            if (x >= 0 && x < cols && y >= 0 && y < rows) {
+                grid[x][y] = 1 - grid[x][y];
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isPlaying || !e.buttons) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / cellSize);
+            const y = Math.floor((e.clientY - rect.top) / cellSize);
+            
+            if (x >= 0 && x < cols && y >= 0 && y < rows) {
+                grid[x][y] = 1;
+                draw();
+            }
+        });
+
+        ruleSelect.addEventListener('change', (e) => {
+            currentRule = e.target.value;
+            ruleSpan.textContent = rules[currentRule].name;
+        });
+
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        stepBtn.addEventListener('click', () => {
+            if (!isPlaying) {
+                nextGeneration();
+                draw();
+            }
+        });
+        clearBtn.addEventListener('click', clearGrid);
+        randomBtn.addEventListener('click', randomizeGrid);
+        autoModeBtn.addEventListener('click', toggleAutoMode);
+
+        // Event listeners pour les nouveaux contrôles
+        speedSlider.addEventListener('input', updateDisplayValues);
+        densitySlider.addEventListener('input', updateDisplayValues);
+        cellSizeSlider.addEventListener('input', () => {
+            updateDisplayValues();
+            // Même logique que dans draw() avec dézoom x4
+            const zoomValue = parseInt(cellSizeSlider.value);
+            cellSize = Math.max(0.25, 20 - (zoomValue * 19.75 / 1000));
+            resizeCanvas();
+        });
+        
+        colorSchemeSelect.addEventListener('change', (e) => {
+            colorScheme = e.target.value;
+            draw();
+        });
+
+        // Fullscreen functionality
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                document.body.classList.add('fullscreen-mode');
+            } else {
+                document.exitFullscreen();
+                document.body.classList.remove('fullscreen-mode');
+            }
+        });
+        
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('fullscreen-mode');
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Initialisation
+        updateDisplayValues();
+        resizeCanvas();
+        randomizeGrid();
+    </script>
+</body>
+</html>

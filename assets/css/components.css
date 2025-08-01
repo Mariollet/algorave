@@ -113,7 +113,59 @@
     box-shadow: 0 0 0 2px rgba(255, 0, 110, 0.2);
 }
 
-/* Boutons */
+/* Bouton fullscreen uniforme */
+.atom-fullscreen-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(20px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    color: var(--text-primary);
+    font-size: 18px;
+    font-family: 'Orbitron', monospace;
+}
+
+.atom-fullscreen-btn:hover {
+    background: var(--glass-hover);
+    border-color: var(--accent-pink);
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(255, 0, 110, 0.3);
+}
+
+.atom-fullscreen-btn.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* État fullscreen - cacher tous les contrôles */
+.fullscreen-mode .molecule-controls-panel,
+.fullscreen-mode .molecule-info-panel,
+.fullscreen-mode .atom-back-button,
+.fullscreen-mode .controls,
+.fullscreen-mode .back-btn {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.fullscreen-mode canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+}
 .controls button, .btn {
     margin: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) 0;
     padding: 10px var(--spacing-lg);

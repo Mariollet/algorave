@@ -1,0 +1,6 @@
+/* 
+ * Bundle CSS spécifique pour la page d'accueil
+ */
+
+@import 'algorave.css';
+@import 'index.css';

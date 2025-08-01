@@ -112,7 +112,7 @@
         rgba(16, 185, 129, 0.6),
         transparent
     );
-    opacity: 0;
+    opacity: var(--before-opacity, 0);
     transition: opacity 0.3s ease;
 }
 

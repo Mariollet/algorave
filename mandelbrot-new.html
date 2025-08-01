@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mandelbrot Set - Algorave</title>
+    <link rel="stylesheet" href="assets/css/algorave.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* Styles spécifiques - priorité sur algorave.css */
         body {
-            margin: 0;
-            padding: 0;
-            background: #0a0a0a;
-            overflow: hidden;
-            font-family: 'JetBrains Mono', monospace;
-            color: #ffffff;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #0a0a0a !important;
+            overflow: hidden !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            color: #ffffff !important;
         }
         
         canvas {
@@ -22,21 +24,17 @@
             cursor: crosshair;
         }
         
-        .info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            z-index: 100;
+        /* === ATOMIC DESIGN COMPONENTS === */
+        
+        /* Atoms - Éléments de base */
+        .atom-glass-panel {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 16px;
-            padding: 24px;
             backdrop-filter: blur(20px);
-            max-width: 320px;
         }
         
-        .info h3 {
+        .atom-title-primary {
             font-family: 'Orbitron', monospace;
             font-size: 1.25rem;
             font-weight: 600;
@@ -46,28 +44,7 @@
             color: #10b981;
         }
         
-        .info p {
-            margin: 8px 0;
-            line-height: 1.5;
-            font-size: 0.9rem;
-            color: #b3b3b3;
-        }
-        
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: white;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(20px);
-            min-width: 280px;
-        }
-        
-        .controls h4 {
+        .atom-title-secondary {
             font-family: 'Orbitron', monospace;
             font-size: 1rem;
             font-weight: 600;
@@ -77,14 +54,22 @@
             color: #ffffff;
         }
         
-        .controls label {
+        .atom-text-description {
+            margin: 8px 0;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+        
+        .atom-label {
             display: block;
             margin-bottom: 12px;
             font-size: 0.875rem;
             font-weight: 500;
+            color: #ffffff;
         }
         
-        .controls select {
+        .atom-select {
             width: 100%;
             margin-top: 4px;
             padding: 8px 12px;
@@ -94,15 +79,16 @@
             border-radius: 8px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.875rem;
+            transition: all 0.2s ease;
         }
         
-        .controls select:focus {
+        .atom-select:focus {
             outline: none;
             border-color: rgba(255, 0, 110, 0.5);
             box-shadow: 0 0 0 2px rgba(255, 0, 110, 0.2);
         }
         
-        .controls input[type="range"] {
+        .atom-slider {
             width: 100%;
             margin-top: 4px;
             -webkit-appearance: none;
@@ -113,7 +99,7 @@
             outline: none;
         }
         
-        .controls input[type="range"]::-webkit-slider-thumb {
+        .atom-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 16px;
@@ -124,7 +110,7 @@
             border: 2px solid #ffffff;
         }
         
-        .controls input[type="range"]::-moz-range-thumb {
+        .atom-slider::-moz-range-thumb {
             width: 16px;
             height: 16px;
             background: linear-gradient(45deg, #ff006e, #8338ec);
@@ -133,7 +119,7 @@
             border: 2px solid #ffffff;
         }
         
-        .controls button {
+        .atom-button {
             margin: 8px 8px 8px 0;
             padding: 10px 16px;
             background: linear-gradient(45deg, rgba(255, 0, 110, 0.2), rgba(59, 130, 246, 0.2));
@@ -149,20 +135,74 @@
             transition: all 0.2s ease;
         }
         
-        .controls button:hover {
+        .atom-button:hover {
             background: linear-gradient(45deg, rgba(255, 0, 110, 0.4), rgba(59, 130, 246, 0.4));
             border-color: rgba(255, 0, 110, 0.5);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(255, 0, 110, 0.3);
         }
         
-        .controls button.active {
+        .atom-button--active {
             background: linear-gradient(45deg, rgba(255, 0, 110, 0.6), rgba(59, 130, 246, 0.6));
             border-color: rgba(255, 0, 110, 0.8);
             box-shadow: 0 0 20px rgba(255, 0, 110, 0.4);
         }
         
-        .back-btn {
+        .atom-button--auto-active {
+            background: #ff4444 !important;
+            border-color: #ff6666 !important;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.4) !important;
+        }
+        
+        /* Molecules - Groupes d'atomes */
+        .molecule-info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            padding: 24px;
+            max-width: 320px;
+        }
+        
+        .molecule-controls-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            z-index: 100;
+            padding: 24px;
+            min-width: 280px;
+        }
+        
+        .molecule-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        
+        /* Organisms - Interface complète - placeholders pour future extension */
+        /* .organism-info-section et .organism-controls-section seront utilisés pour des layouts plus complexes */
+        
+        /* Templates - Layout global */
+        .template-visualization-page {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            color: #ffffff;
+        }
+        
+        .template-canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        
+        /* Components Navigation */
+        .atom-back-button {
             position: absolute;
             bottom: 20px;
             left: 20px;
@@ -179,7 +219,7 @@
             font-weight: 500;
         }
         
-        .back-btn:hover {
+        .atom-back-button:hover {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.2);
             transform: translateX(-3px);
@@ -187,40 +227,47 @@
     </style>
 </head>
 <body>
-    <div class="info">
-        <h3>Ensemble de Mandelbrot</h3>
-        <p>L'ensemble fractal le plus célèbre au monde. Cliquez pour zoomer dans les zones intéressantes et explorer l'infini mathématique.</p>
-        <p><strong>Mode:</strong> <span id="currentMode">Manuel</span></p>
+    <div class="molecule-info-panel atom-glass-panel">
+        <h3 class="atom-title-primary">Ensemble de Mandelbrot</h3>
+        <p class="atom-text-description">L'ensemble fractal le plus célèbre au monde. Cliquez pour zoomer dans les zones intéressantes et explorer l'infini mathématique.</p>
+        <p class="atom-text-description"><strong>Mode:</strong> <span id="currentMode">Manuel</span></p>
     </div>
     
-    <div class="controls">
-        <h4>Contrôles</h4>
+    <div class="molecule-controls-panel atom-glass-panel">
+        <h4 class="atom-title-secondary">Contrôles</h4>
         
-        <label>Palette: 
-            <select id="colorScheme">
+        <label class="atom-label">Palette: 
+            <select id="colorScheme" class="atom-select">
                 <option value="rainbow">Arc-en-ciel</option>
-                <option value="fire">Feu</option>
+                <option value="fire" selected>Feu</option>
                 <option value="ocean">Océan</option>
-                <option value="psychedelic" selected>Psychédélique</option>
+                <option value="psychedelic">Psychédélique</option>
                 <option value="monochrome">Monochrome</option>
             </select>
         </label>
-        <label>Itérations: <input type="range" id="maxIter" min="50" max="500" value="100"></label>
-        <label>Vitesse: <input type="range" id="autoSpeed" min="0.2" max="3.0" step="0.1" value="1.0"></label>
-        <label>Qualité:
-            <select id="quality">
+        <label class="atom-label">Itérations: <input type="range" id="maxIter" class="atom-slider" min="50" max="500" value="100"></label>
+        <label class="atom-label">Vitesse: <input type="range" id="autoSpeed" class="atom-slider" min="0.2" max="3.0" step="0.1" value="1.0"></label>
+        <label class="atom-label">Qualité:
+            <select id="quality" class="atom-select">
                 <option value="low">Rapide</option>
                 <option value="medium" selected>Normale</option>
                 <option value="high">Haute</option>
             </select>
         </label>
         
-        <button id="randomBtn">Randomiser</button>
-        <button id="resetBtn">Reset</button>
-        <button id="autoBtn">Auto Mode</button>
+        <div class="molecule-button-group">
+            <button id="randomBtn" class="atom-button">Randomiser</button>
+            <button id="resetBtn" class="atom-button">Reset</button>
+            <button id="autoBtn" class="atom-button">Auto Mode</button>
+        </div>
     </div>
     
-    <a href="index.html" class="back-btn">← Retour à Algorave</a>
+        <a href="index.html" class="atom-back-button">← Retour à Algorave</a>
+    
+    <!-- Bouton fullscreen -->
+    <button class="atom-fullscreen-btn" id="fullscreenBtn" title="Mode plein écran">
+        ⛶
+    </button>
     
     <canvas id="mandelbrotCanvas"></canvas>
 
@@ -236,7 +283,7 @@
         let isAutoMode = false;
         let autoTimer = 0;
         let autoSpeed = 1.0;
-        let colorScheme = 'psychedelic';
+        let colorScheme = 'fire';
         let quality = 'medium';
         
         // Points d'intérêt pour l'exploration automatique
@@ -451,19 +498,21 @@
             
             if (isAutoMode) {
                 btn.textContent = 'Stop Auto';
-                btn.classList.add('active');
+                btn.classList.add('atom-button--auto-active');
+                btn.classList.remove('atom-button--active');
                 current = { x: centerX, y: centerY, z: zoom };
                 startAutoMode();
             } else {
                 btn.textContent = 'Auto Mode';
-                btn.classList.remove('active');
+                btn.classList.remove('atom-button--auto-active', 'atom-button--active');
             }
         });
 
         document.getElementById('resetBtn').addEventListener('click', () => {
             isAutoMode = false;
-            document.getElementById('autoBtn').textContent = 'Auto Mode';
-            document.getElementById('autoBtn').classList.remove('active');
+            const autoBtn = document.getElementById('autoBtn');
+            autoBtn.textContent = 'Auto Mode';
+            autoBtn.classList.remove('atom-button--auto-active', 'atom-button--active');
             
             centerX = -0.5; centerY = 0.0; zoom = 1;
             maxIterations = 100;
@@ -480,6 +529,48 @@
                 centerY = pt.y + (Math.random() - 0.5) * 0.05;
                 zoom = pt.z * (0.7 + Math.random() * 0.6);
                 render();
+            }
+        });
+        
+        // Fullscreen functionality
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        let isFullscreen = false;
+        
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        function toggleFullscreen() {
+            isFullscreen = !isFullscreen;
+            
+            if (isFullscreen) {
+                document.body.classList.add('fullscreen-mode');
+                fullscreenBtn.innerHTML = '⛉'; // Icône exit fullscreen
+                fullscreenBtn.title = 'Quitter le plein écran';
+                
+                // Optionnel: Utiliser l'API Fullscreen du navigateur
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                }
+            } else {
+                document.body.classList.remove('fullscreen-mode');
+                fullscreenBtn.innerHTML = '⛶'; // Icône fullscreen
+                fullscreenBtn.title = 'Mode plein écran';
+                
+                // Quitter le fullscreen du navigateur
+                if (document.exitFullscreen && document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+            }
+            
+            // Redimensionner le canvas
+            resize();
+            render();
+        }
+        
+        // Écouter les changements de fullscreen du navigateur
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && isFullscreen) {
+                // L'utilisateur a quitté le fullscreen avec Échap
+                toggleFullscreen();
             }
         });
 
